@@ -61,8 +61,13 @@ mmctl --local bot list
   also capture the user id to `agents/<bot>/userid`. The token is shown once;
   if you don't save it, it's gone (you'd have to revoke + regenerate).
 - When you create a bot, also write `agents/<bot>/CLAUDE.md` with its role definition.
-  If the user gave a clear role description, use that. Otherwise ask one short question
-  ("what does dev-bot own?") before writing — don't invent a role silently.
+  Use `CLAUDE.template.md` as the starting point — copy it, fill in the role
+  placeholders, replace every `<agent-name>` with the bot's username (e.g. `dev-bot`).
+  Do not omit or paraphrase the "Communication discipline" block at the bottom —
+  it must remain verbatim with the name substituted.
+- If the user gave a clear role description, use that for the role placeholders.
+  Otherwise ask one short question ("what does dev-bot own?") before writing —
+  don't invent a role silently.
 - Never print full tokens to chat. Acknowledge by name only: "Created dev-bot, token saved."
 - If the Mattermost container isn't up, run `docker compose up -d` first and wait for
   http://localhost:8065/api/v4/system/ping to return 200 before issuing mmctl calls.
@@ -89,10 +94,50 @@ not affect what `qa-bot` sees on the next call.
 `bin/wait-for-message <that-agent>`. On result:
 - `post.user_id` matches one of `agents/*/userid` → ignore (it's one of our own bots).
 - `timeout: true` → call again (no new message; just keep waiting).
-- otherwise → decide which agent should respond, send a reply with that agent's token,
-  then call `bin/wait-for-message` again.
+- otherwise → handle the message, **post a reply to Mattermost**, then call
+  `bin/wait-for-message` again.
 
 This keeps you reactive without polling: a single perpetual turn driven by the tool.
+
+## Communication discipline (read this twice)
+
+Two channels exist and they have different roles. Don't confuse them.
+
+- **The terminal** (your stdout, visible to the CTO who started the supervisor)
+  is for narration and operator-facing context. Print what you're doing, what you
+  decided, what you're stuck on. The CTO can read along, intervene, or ignore.
+  **The terminal is not a user channel.** Never wait for terminal input. Never
+  ask "how would you like me to proceed?" as your final action.
+- **Mattermost** is where the team — humans and other agents — actually lives.
+  Every incoming message demands an outgoing message in reply, posted in the
+  thread or channel it came from.
+
+### The non-negotiable rules
+
+1. **Every received message gets a Mattermost reply.** Always. Even if the reply
+   is *"blocked, here's why."* Even if you don't know the full answer yet —
+   acknowledge, state your status, ask your question *in chat*.
+2. **After replying, call `bin/wait-for-message` again.** Always. The loop is
+   the contract. Don't end your turn anywhere else.
+3. **If you're blocked or need a decision**, post the blocker to Mattermost
+   (channel or thread, whichever fits) — *then* return to the wait loop.
+   Mattermost is where the decision will arrive: as the next message.
+4. **Narrate freely to the terminal**, but never let narration replace a
+   Mattermost reply. The CTO watching the terminal is a privileged observer,
+   not a substitute for the team's real coordination surface.
+
+### Examples
+
+- A teammate asks for a code review and you can't access the repo →
+  post `"Blocked — need read access to /home/hkf/projects/foo. Please grant
+  via supervisor flag and re-ping."` in the original thread → loop.
+- You don't understand the request → post a clarifying question in the thread → loop.
+- The work succeeded → post the result/summary → loop.
+- You finished a long task and there's nothing pending → optionally post a
+  status note → loop.
+
+If you ever feel the impulse to end your turn with a question for the terminal
+user, that's the bug. Convert it to a Mattermost post and loop.
 
 ## Sending messages
 
