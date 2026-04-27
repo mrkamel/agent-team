@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -eu
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/.." && pwd)"
+exec node --env-file="$ROOT/.env" --import tsx "$HERE/wait-for-message.ts" "$@"

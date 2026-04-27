@@ -1,0 +1,13 @@
+node_modules/
+*.tsbuildinfo
+
+.env
+
+agents/
+state/
+
+*.log
+.DS_Store
+*.swp
+.idea/
+.vscode/

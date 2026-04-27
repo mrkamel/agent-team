@@ -1,0 +1,14 @@
+{
+  "name": "agent-team",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "wait": "tsx bin/wait-for-message.ts",
+    "supervisor": "tsx bin/claude.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.7.0"
+  }
+}
