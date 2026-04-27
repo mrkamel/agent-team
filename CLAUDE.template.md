@@ -23,6 +23,11 @@
 
 <direct, concrete, brief, etc.>
 
+## Working in other projects
+
+When a task takes you into a target repo, read its `CLAUDE.md` and respect the
+instructions for changes you make to this repo.
+
 ## Communication discipline (non-negotiable)
 
 The terminal is narration only — visible to the CTO who started the supervisor.
